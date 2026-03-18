@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoPilot AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+      </div>
+      <span class="logo-name">AutoPilot AI</span>
+      <span class="logo-tag">Multimodal Navigator</span>
+      <div class="status-chip">
+        <span class="sdot idle" id="sdot"></span>
+        <span id="slabel">Idle</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="tbadge gem">✦ Gemini 1.5 Flash</span>
+      <span class="tbadge">Playwright</span>
+      <span class="tbadge">FastAPI</span>
+    </div>
+  </header>
+
+  <!-- MAIN GRID -->
+  <div class="grid">
+
+    <!-- LEFT: Mission Control -->
+    <aside class="panel left-panel">
+      <div class="phead"><span class="ptitle">Mission Control</span></div>
+      <div class="pbody">
+
+        <label class="flabel" for="goal-input">Agent Goal</label>
+        <textarea id="goal-input"
+          placeholder="e.g. Find the cheapest book on books.toscrape.com"
+          spellcheck="false"></textarea>
+
+        <button class="btn primary" id="run-btn" onclick="runAgent()">
+          <svg class="bicon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span class="blabel">Run Agent</span>
+          <span class="bspinner"></span>
+        </button>
+
+        <button class="btn stop" id="stop-btn" onclick="stopAgent()" style="display:none;">
+          <svg class="bicon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          Stop Agent
+        </button>
+
+        <div class="divider"><span>Presets</span></div>
+
+        <div class="presets">
+          <button class="btn preset" onclick="setGoal('Find the cheapest book on books.toscrape.com and return its title and price')">📚 Cheapest Book</button>
+          <button class="btn preset" onclick="setGoal('Find a Mystery book under £10 on books.toscrape.com')">🔍 Mystery &lt; £10</button>
+          <button class="btn preset" onclick="setGoal('Find the highest rated 5-star book on books.toscrape.com')">⭐ 5-Star Book</button>
+          <button class="btn preset" onclick="setGoal('How many books are in the Travel category on books.toscrape.com?')">✈️ Count Travel Books</button>
+          <button class="btn preset" onclick="setGoal('What is the most expensive book on books.toscrape.com?')">💰 Most Expensive</button>
+        </div>
+
+        <div class="cfg-block">
+          <div class="cfg-row">
+            <span class="cfg-k">Max Steps</span>
+            <select class="cfg-sel" id="cfg-max-steps">
+              <option value="5">5</option>
+              <option value="8" selected>8</option>
+              <option value="12">12</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-k">
+              <span class="live-dot"></span>Live Chrome
+            </span>
+            <!-- CHECKED = headless OFF = live browser window -->
+            <label class="tog-wrap">
+              <input type="checkbox" id="cfg-live" checked />
+              <span class="tog"></span>
+            </label>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-k">Poll Interval</span>
+            <select class="cfg-sel" id="cfg-poll">
+              <option value="1000" selected>1 s</option>
+              <option value="2000">2 s</option>
+            </select>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-k">Backend</span>
+            <span class="cfg-v" id="cfg-url">:8080</span>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- CENTER: Activity Theater -->
+    <main class="theater" id="theater">
+
+      <!-- IDLE -->
+      <div id="view-idle" class="view">
+        <div class="idle-orb">
+          <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+        <h2 class="idle-title">Ready to Navigate</h2>
+        <p class="idle-sub">Enter a goal and press <strong>Run Agent</strong>.<br>Chrome opens and you watch the AI browse live.</p>
+        <div class="idle-pills">
+          <span class="pill green">Chrome opens automatically</span>
+          <span class="pill blue">AI controls the browser</span>
+          <span class="pill purple">Results appear here</span>
+        </div>
+      </div>
+
+      <!-- RUNNING -->
+      <div id="view-run" class="view" style="display:none;">
+        <div class="live-badge" id="live-badge">
+          <span class="live-dot-anim"></span>
+          Chrome is open — watch it navigate live
+        </div>
+        <div class="goal-chip" id="goal-chip"></div>
+        <div class="feed" id="step-feed" role="log" aria-live="polite"></div>
+        <div class="run-footer">
+          <div class="run-stats">
+            <span class="rstat"><strong id="rs-steps">0</strong><small>steps</small></span>
+            <span class="rsep"></span>
+            <span class="rstat"><strong id="rs-actions">0</strong><small>actions</small></span>
+            <span class="rsep"></span>
+            <span class="rstat"><strong id="rs-elapsed">0s</strong><small>elapsed</small></span>
+          </div>
+          <div class="run-url">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+            <span id="run-url-text">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div id="view-result" class="view" style="display:none;">
+        <div class="res-glow" id="res-glow"></div>
+        <div class="res-icon" id="res-icon">✓</div>
+        <div class="res-status" id="res-status">Task Complete</div>
+        <div class="res-value" id="res-value"></div>
+        <div class="res-meta"  id="res-meta"></div>
+        <button class="btn ghost-lg" onclick="resetUI()" style="margin-top:24px;">↺ New Task</button>
+      </div>
+
+    </main>
+
+    <!-- RIGHT: Trace Log -->
+    <aside class="panel right-panel">
+      <div class="phead flex-head">
+        <span class="ptitle">Agent Trace</span>
+        <button class="btn ghost-sm" onclick="clearTrace()">Clear</button>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="stats-bar">
+        <div class="stat"><span class="sval" id="stat-steps">0</span><span class="slbl">Steps</span></div>
+        <div class="stat"><span class="sval" id="stat-actions">0</span><span class="slbl">Actions</span></div>
+        <div class="stat"><span class="sval" id="stat-elapsed">0s</span><span class="slbl">Elapsed</span></div>
+        <div class="stat"><span class="sval" id="stat-polls">0</span><span class="slbl">Polls</span></div>
+      </div>
+
+      <!-- Log stream -->
+      <div class="log-scroll" id="log-scroll">
+        <div id="log-stream" role="log" aria-live="polite"></div>
+        <div id="log-result"></div>
+      </div>
+    </aside>
+
+  </div><!-- /grid -->
+</div><!-- /app -->
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
